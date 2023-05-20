@@ -23,7 +23,7 @@
   "scripts": {
     "start": "egg-scripts start --env=prod --title=node-api --port=3000",
     "stop": "egg-scripts stop --title=node-api --port=3000",
-    "dev": "egg-bin dev",
+    "dev": "egg-bin dev --port=3000",
     "debug": "egg-bin debug",
     "test": "yarn run lint -- --fix && yarn run test-local",
     "test-local": "egg-bin test",

@@ -24,12 +24,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
+      # https://github.com/marketplace/actions/docker-metadata-action#typesha
+      # 注意下面这个 action tags 的生成规则
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v2
+        uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: type=semver,pattern={{version}}
+          tags: type=sha
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
@@ -38,3 +40,16 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_UNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            docker rm node-api
+            docker pull ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
+            docker images
+            docker run -d -p 8090:3000 --name node-api ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
