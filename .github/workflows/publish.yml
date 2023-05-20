@@ -49,7 +49,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            docker stop node-api
-            docker rm -f node-api
+            if [[ -n $(docker ps -q -f "name=node-api") ]];then
+              docker stop node-api
+              docker rm -f node-api
+            fi
+
             docker pull ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
             docker run -d -p 8090:3000 --name node-api ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
