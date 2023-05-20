@@ -52,5 +52,4 @@ jobs:
             docker stop node-api
             docker rm -f node-api
             docker pull ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
-            docker images
             docker run -d -p 8090:3000 --name node-api ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
