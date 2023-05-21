@@ -17,12 +17,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 我的服务器目前是用的 腾讯云服务器, 在操作中发现服务器拉取 ghcr 的镜像一直失败，timetout
+      # 于是我又切回 docker 官方自带的 hub 了 hub.docker.com
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          # registry: ${{ env.REGISTRY }}
+          # username: ${{ github.actor }}
+          # password: ${{ secrets.GHCR_TOKEN }}
+          username: ${{ secrets.DOCKER_ID }}
+          password: ${{ secrets.DOCKER_PWD }}
 
       # https://github.com/marketplace/actions/docker-metadata-action#typesha
       # 注意下面这个 action tags 的生成规则
@@ -41,18 +45,18 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: executing remote ssh commands using ssh key
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_UNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            if [[ -n $(docker ps -q -f "name=node-api") ]];then
-              docker stop node-api
-              docker rm -f node-api
-            fi
+      # - name: executing remote ssh commands using ssh key
+      #   uses: appleboy/ssh-action@v0.1.10
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_UNAME }}
+      #     key: ${{ secrets.SSH_KEY }}
+      #     port: ${{ secrets.SSH_PORT }}
+      #     script: |
+      #       if [[ -n $(docker ps -q -f "name=node-api") ]];then
+      #         docker stop node-api
+      #         docker rm -f node-api
+      #       fi
 
-            docker pull ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
-            docker run -d -p 8090:3000 --name node-api ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
+      #       docker pull ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
+      #       docker run -d -p 8090:3000 --name node-api ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
