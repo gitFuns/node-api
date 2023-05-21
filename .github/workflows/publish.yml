@@ -7,8 +7,11 @@ on:
       - master
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # ghcr 格式如下
+  # REGISTRY: ghcr.io
+  # IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: node-api
+  CONTAINER_NAME: node-api
 
 jobs:
   build-and-push-image:
@@ -34,7 +37,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ secrets.DOCKER_ID }}/${{ env.IMAGE_NAME }}
           tags: type=sha
 
       - name: Build and push Docker image
@@ -45,18 +49,18 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      # - name: executing remote ssh commands using ssh key
-      #   uses: appleboy/ssh-action@v0.1.10
-      #   with:
-      #     host: ${{ secrets.SSH_HOST }}
-      #     username: ${{ secrets.SSH_UNAME }}
-      #     key: ${{ secrets.SSH_KEY }}
-      #     port: ${{ secrets.SSH_PORT }}
-      #     script: |
-      #       if [[ -n $(docker ps -q -f "name=node-api") ]];then
-      #         docker stop node-api
-      #         docker rm -f node-api
-      #       fi
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_UNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            if [[ -n $(docker ps -q -f "name=${{ env.CONTAINER_NAME }}") ]];then
+              docker stop ${{ env.CONTAINER_NAME }}
+              docker rm -f ${{ env.CONTAINER_NAME }}
+            fi
 
-      #       docker pull ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
-      #       docker run -d -p 8090:3000 --name node-api ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
+            docker pull ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
+            docker run -d -p 8090:3000 --name ${{ env.CONTAINER_NAME }} ${{ env.DOCKER_METADATA_OUTPUT_TAGS }}
