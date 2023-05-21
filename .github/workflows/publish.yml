@@ -22,7 +22,7 @@ jobs:
 
       # 我的服务器目前是用的 腾讯云服务器, 在操作中发现服务器拉取 ghcr 的镜像一直失败，timetout
       # 于是我又切回 docker 官方自带的 hub 了 hub.docker.com
-      - name: Login to GitHub Container Registry
+      - name: Login to Container Registry
         uses: docker/login-action@v2
         with:
           # registry: ${{ env.REGISTRY }}
